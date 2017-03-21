@@ -8,3 +8,5 @@ Forked from :
 The UIManager contains information about the default properties of each Swing component. This information is stored in the UIDefaults class in the form of key/value pairs. Each Look and Feel will have its own set of default properties. The UIManager can be used to make changes to these properties.
 
 The UIManagerDefaults program will simply display this information in a nicely formatted way.
+
+I just updated it to use the [Skinned Substance LookAndFeel](https://github.com/kirill-grouchnikov/substance).
