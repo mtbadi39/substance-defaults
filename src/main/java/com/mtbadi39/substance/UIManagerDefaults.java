@@ -15,12 +15,13 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.awt.event.KeyEvent;
 import java.awt.image.BufferedImage;
+import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
-import java.util.Vector;
 import javax.swing.AbstractAction;
 import javax.swing.AbstractButton;
 import javax.swing.Action;
@@ -158,14 +159,14 @@ public class UIManagerDefaults implements ActionListener, ItemListener {
     /*
 	 *  When the LAF is changed we need to reset the content pane
      */
-    public void resetComponents() {
+    private void resetComponents() {
         items.clear();
         models.clear();
         ((DefaultTableModel) table.getModel()).setRowCount(0);
 
         buildItemsMap();
 
-        Vector<String> comboBoxItems = new Vector<String>(50);
+        List<String> comboBoxItems = new ArrayList<String>(50);
         Iterator keys = items.keySet().iterator();
 
         while (keys.hasNext()) {
@@ -174,7 +175,7 @@ public class UIManagerDefaults implements ActionListener, ItemListener {
         }
         comboBox.removeAllItems();
         comboBox.removeItemListener(this);
-        comboBox.setModel(new DefaultComboBoxModel(comboBoxItems));
+        comboBox.setModel(new DefaultComboBoxModel(comboBoxItems.toArray()));
         comboBox.setSelectedIndex(-1);
         comboBox.addItemListener(this);
         comboBox.requestFocusInWindow();
@@ -330,12 +331,12 @@ public class UIManagerDefaults implements ActionListener, ItemListener {
      * Create menu bar
      */
     private JMenuBar createMenuBar() {
-        JMenuBar menuBar = new JMenuBar();
+        JMenuBar mb = new JMenuBar();
 
-        menuBar.add(createFileMenu());
-        menuBar.add(createLAFMenu());
+        mb.add(createFileMenu());
+        mb.add(createLAFMenu());
 
-        return menuBar;
+        return mb;
     }
 
     /**
@@ -405,8 +406,9 @@ public class UIManagerDefaults implements ActionListener, ItemListener {
                             if (lafName.equals(lafId)) {
                                 mi.setSelected(true);
                             }
-                        } catch (Exception e) {
-                            e.printStackTrace();
+                        } catch (Exception ex) {
+                            System.out.println("Failed loading Substance L&F: " + laf);
+                            System.out.println(ex);
                         }
                     }
                 })
@@ -418,6 +420,7 @@ public class UIManagerDefaults implements ActionListener, ItemListener {
     /*
 	 *  Implement the ActionListener interface
      */
+    @Override
     public void actionPerformed(ActionEvent e) {
         selectedItem = null;
         resetComponents();
@@ -427,6 +430,7 @@ public class UIManagerDefaults implements ActionListener, ItemListener {
     /*
 	 *  Implement the ItemListener interface
      */
+    @Override
     public void itemStateChanged(ItemEvent e) {
         String itemName = (String) e.getItem();
         changeTableModel(itemName);
@@ -458,7 +462,7 @@ public class UIManagerDefaults implements ActionListener, ItemListener {
             String attribute = (String) ai.next();
             Object value = attributes.get(attribute);
 
-            Vector<Object> row = new Vector<Object>(3);
+            List<Object> row = new ArrayList<Object>(3);
             row.add(attribute);
 
             if (value != null) {
@@ -474,7 +478,7 @@ public class UIManagerDefaults implements ActionListener, ItemListener {
                 row.add("");
             }
 
-            model.addRow(row);
+            model.addRow(row.toArray());
         }
 
         table.setModel(model);
@@ -520,7 +524,7 @@ public class UIManagerDefaults implements ActionListener, ItemListener {
      */
     public static class SafeIcon implements Icon {
 
-        private Icon wrappee;
+        private final Icon wrappee;
         private Icon standIn;
 
         public SafeIcon(Icon wrappee) {
@@ -589,6 +593,7 @@ public class UIManagerDefaults implements ActionListener, ItemListener {
                 standInComponent = (JComponent) clazz.newInstance();
             } catch (InstantiationException e) {
                 standInComponent = new AbstractButton() {
+                    private static final long serialVersionUID = 1L;
                 };
                 ((AbstractButton) standInComponent).setModel(new DefaultButtonModel());
             }
@@ -614,7 +619,9 @@ public class UIManagerDefaults implements ActionListener, ItemListener {
     /*
 	 *  Render the value based on its class.
      */
-    class SampleRenderer extends JLabel implements TableCellRenderer {
+    private class SampleRenderer extends JLabel implements TableCellRenderer {
+
+        private static final long serialVersionUID = 1L;
 
         public SampleRenderer() {
             super();
@@ -622,6 +629,7 @@ public class UIManagerDefaults implements ActionListener, ItemListener {
             setOpaque(true);
         }
 
+        @Override
         public Component getTableCellRendererComponent(
                 JTable table, Object sample, boolean isSelected, boolean hasFocus, int row, int column) {
             setBackground(null);
@@ -648,6 +656,7 @@ public class UIManagerDefaults implements ActionListener, ItemListener {
 		 *  shared by other items. This code will catch the
 		 *  ClassCastException that is thrown.
          */
+        @Override
         public void paint(Graphics g) {
             try {
                 super.paint(g);
@@ -662,10 +671,12 @@ public class UIManagerDefaults implements ActionListener, ItemListener {
 	 *  Change the LAF and recreate the UIManagerDefaults so that the properties
 	 *  of the new LAF are correctly displayed.
      */
-    class ChangeLookAndFeelAction extends AbstractAction {
+    private class ChangeLookAndFeelAction extends AbstractAction {
 
-        private UIManagerDefaults defaults;
-        private String laf;
+        private static final long serialVersionUID = 1L;
+
+        private final UIManagerDefaults defaults;
+        private final String laf;
 
         protected ChangeLookAndFeelAction(UIManagerDefaults defaults, String laf, String name) {
             this.defaults = defaults;
@@ -674,6 +685,7 @@ public class UIManagerDefaults implements ActionListener, ItemListener {
             putValue(Action.SHORT_DESCRIPTION, getValue(Action.NAME));
         }
 
+        @Override
         public void actionPerformed(ActionEvent e) {
             try {
                 UIManager.setLookAndFeel(laf);
@@ -697,10 +709,8 @@ public class UIManagerDefaults implements ActionListener, ItemListener {
 
                 frame.setVisible(true);
             } catch (Exception ex) {
-
                 System.out.println("Failed loading L&F: " + laf);
-                //System.out.println(ex);
-                ex.printStackTrace();
+                System.out.println(ex);
             }
         }
     }
@@ -708,14 +718,17 @@ public class UIManagerDefaults implements ActionListener, ItemListener {
     /*
 	 *	Close the frame
      */
-    class ExitAction extends AbstractAction {
+    private class ExitAction extends AbstractAction {
+
+        private static final long serialVersionUID = 1L;
 
         public ExitAction() {
             putValue(Action.NAME, "Exit");
             putValue(Action.SHORT_DESCRIPTION, getValue(Action.NAME));
-            putValue(Action.MNEMONIC_KEY, new Integer(KeyEvent.VK_X));
+            putValue(Action.MNEMONIC_KEY, KeyEvent.VK_X);
         }
 
+        @Override
         public void actionPerformed(ActionEvent e) {
             System.exit(0);
         }
@@ -742,6 +755,7 @@ public class UIManagerDefaults implements ActionListener, ItemListener {
      */
     public static void main(String[] args) {
         SwingUtilities.invokeLater(new Runnable() {
+            @Override
             public void run() {
                 createAndShowGUI();
             }
