@@ -10,3 +10,6 @@ The UIManager contains information about the default properties of each Swing co
 The UIManagerDefaults program will simply display this information in a nicely formatted way.
 
 I just updated it to use the [Skinned Substance LookAndFeel](https://github.com/kirill-grouchnikov/substance).
+
+#### Edit :
+Download and manually install the latest official Substance artifacts : [substance-7.0.01.jar](https://github.com/kirill-grouchnikov/substance/blob/master/drop/7.0.01/substance-7.0.01.jar) and [trident-1.4.jar](https://github.com/kirill-grouchnikov/substance/blob/master/drop/7.0.01/trident-1.4.jar)
