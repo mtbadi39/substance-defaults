@@ -373,6 +373,7 @@ public class UIManagerDefaults implements ActionListener, ItemListener {
          * Install Substance LookAndFeel  *
          */
         new FastClasspathScanner("org.pushingpixels.substance.api.skin")
+                .verbose()
                 .matchSubclassesOf(SubstanceLookAndFeel.class, new SubclassMatchProcessor<SubstanceLookAndFeel>() {
                     String lafCalssName;
                     String lafName;
