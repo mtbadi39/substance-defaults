@@ -368,24 +368,11 @@ public class UIManagerDefaults implements ActionListener, ItemListener {
         lafMenu.setMnemonic('L');
 
         lafId = UIManager.getLookAndFeel().getID();
-        UIManager.LookAndFeelInfo[] lafInfo = UIManager.getInstalledLookAndFeels();
 
-        for (UIManager.LookAndFeelInfo lafInfo1 : lafInfo) {
-            lafCalssName = lafInfo1.getClassName();
-            lafName = lafInfo1.getName();
-            Action action = new ChangeLookAndFeelAction(this, lafCalssName, lafName);
-            JRadioButtonMenuItem mi = new JRadioButtonMenuItem(action);
-            lafMenu.add(mi);
-            lafButtonGroup.add(mi);
-            if (lafName.equals(lafId)) {
-                mi.setSelected(true);
-            }
-        }
+        /**
+         * Install Substance LookAndFeel  *
+         */
         new FastClasspathScanner("org.pushingpixels.substance.api.skin")
-                // Optional, in case you want to debug any issues with scanning.
-                // Add this right after the constructor to maximize the amount of log info.
-                //.verbose()
-                // Add a MatchProcessor ("Mechanism 1")
                 .matchSubclassesOf(SubstanceLookAndFeel.class, new SubclassMatchProcessor<SubstanceLookAndFeel>() {
                     String lafCalssName;
                     String lafName;
@@ -399,6 +386,7 @@ public class UIManagerDefaults implements ActionListener, ItemListener {
                             lafCalssName = laf.getClass().getName();
                             UIManager.installLookAndFeel(lafName, lafCalssName);
                             //System.out.println(laf.getName() + " >> " + laf.getClass().getName());
+                            /*
                             Action action = new ChangeLookAndFeelAction(UIManagerDefaults.this, lafCalssName, lafName);
                             JRadioButtonMenuItem mi = new JRadioButtonMenuItem(action);
                             lafMenu.add(mi);
@@ -406,6 +394,7 @@ public class UIManagerDefaults implements ActionListener, ItemListener {
                             if (lafName.equals(lafId)) {
                                 mi.setSelected(true);
                             }
+                             */
                         } catch (Exception ex) {
                             System.out.println("Failed loading Substance L&F: " + laf);
                             System.out.println(ex);
@@ -414,6 +403,21 @@ public class UIManagerDefaults implements ActionListener, ItemListener {
                 })
                 // Actually perform the scan (nothing will happen without this call)
                 .scan();
+
+        UIManager.LookAndFeelInfo[] lafInfo = UIManager.getInstalledLookAndFeels();
+
+        for (UIManager.LookAndFeelInfo info : lafInfo) {
+            lafCalssName = info.getClassName();
+            lafName = info.getName();
+            Action action = new ChangeLookAndFeelAction(this, lafCalssName, lafName);
+            JRadioButtonMenuItem mi = new JRadioButtonMenuItem(action);
+            lafMenu.add(mi);
+            lafButtonGroup.add(mi);
+            if (lafName.equals(lafId)) {
+                mi.setSelected(true);
+            }
+        }
+
         return lafMenu;
     }
 
