@@ -1,5 +1,11 @@
 package com.mtbadi39.substance;
 
+/*
+ *	This programs uses the information found in the UIManager
+ *  to create a table of key/value pairs for each Swing component.
+ *  from : http://www.camick.com/java/source/UIManagerDefaults.java
+ *
+ */
 import io.github.lukehutch.fastclasspathscanner.FastClasspathScanner;
 import io.github.lukehutch.fastclasspathscanner.matchprocessor.SubclassMatchProcessor;
 import java.awt.BorderLayout;
@@ -57,10 +63,6 @@ import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellRenderer;
 import org.pushingpixels.substance.api.SubstanceLookAndFeel;
 
-/**
- *
- * http://www.camick.com/java/source/UIManagerDefaults.java
- */
 public class UIManagerDefaults implements ActionListener, ItemListener {
 
     private final static String[] COLUMN_NAMES = {"Key", "Value", "Sample"};
@@ -78,6 +80,7 @@ public class UIManagerDefaults implements ActionListener, ItemListener {
 	 *  Constructor
      */
     public UIManagerDefaults() {
+
         items = new TreeMap<String, TreeMap<String, Object>>();
         models = new HashMap<String, DefaultTableModel>();
 
@@ -85,7 +88,7 @@ public class UIManagerDefaults implements ActionListener, ItemListener {
         contentPane.add(buildNorthComponent(), BorderLayout.NORTH);
         contentPane.add(buildCenterComponent(), BorderLayout.CENTER);
 
-        resetComponents();
+        this.resetComponents();
     }
 
     /*
@@ -159,7 +162,7 @@ public class UIManagerDefaults implements ActionListener, ItemListener {
     /*
 	 *  When the LAF is changed we need to reset the content pane
      */
-    private void resetComponents() {
+    public void resetComponents() {
         items.clear();
         models.clear();
         ((DefaultTableModel) table.getModel()).setRowCount(0);
@@ -173,19 +176,14 @@ public class UIManagerDefaults implements ActionListener, ItemListener {
             Object key = keys.next();
             comboBoxItems.add((String) key);
         }
-        comboBox.removeAllItems();
+
         comboBox.removeItemListener(this);
         comboBox.setModel(new DefaultComboBoxModel(comboBoxItems.toArray()));
         comboBox.setSelectedIndex(-1);
         comboBox.addItemListener(this);
         comboBox.requestFocusInWindow();
 
-        if (selectedItem != null && comboBoxItems.contains(selectedItem)) {
-            System.out.println(" >> selectedItem : " + selectedItem);
-            System.out.println(" >> comboBoxItems : ");
-            for (String s : comboBoxItems) {
-                System.out.println("     - " + s);
-            }
+        if (selectedItem != null) {
             comboBox.setSelectedItem(selectedItem);
         }
     }
@@ -331,12 +329,12 @@ public class UIManagerDefaults implements ActionListener, ItemListener {
      * Create menu bar
      */
     private JMenuBar createMenuBar() {
-        JMenuBar mb = new JMenuBar();
+        JMenuBar _menuBar = new JMenuBar();
 
-        mb.add(createFileMenu());
-        mb.add(createLAFMenu());
+        _menuBar.add(createFileMenu());
+        _menuBar.add(createLAFMenu());
 
-        return mb;
+        return _menuBar;
     }
 
     /**
@@ -355,25 +353,19 @@ public class UIManagerDefaults implements ActionListener, ItemListener {
     /**
      * Create menu items for the Look & Feel menu
      */
-    private JMenu lafMenu;
-    private ButtonGroup lafButtonGroup;
-    private String lafId;
-
     private JMenu createLAFMenu() {
-        String lafCalssName;
-        String lafName;
-        lafButtonGroup = new ButtonGroup();
+        ButtonGroup bg = new ButtonGroup();
 
-        lafMenu = new JMenu("Look & Feel");
-        lafMenu.setMnemonic('L');
+        JMenu menu = new JMenu("Look & Feel");
+        menu.setMnemonic('L');
 
-        lafId = UIManager.getLookAndFeel().getID();
+        String lafId = UIManager.getLookAndFeel().getID();
 
         /**
-         * Install Substance LookAndFeel  *
+         * Install Substance LookAndFeel *
          */
         new FastClasspathScanner("org.pushingpixels.substance.api.skin")
-                .verbose()
+                //.verbose()
                 .matchSubclassesOf(SubstanceLookAndFeel.class, new SubclassMatchProcessor<SubstanceLookAndFeel>() {
                     String lafCalssName;
                     String lafName;
@@ -382,9 +374,13 @@ public class UIManagerDefaults implements ActionListener, ItemListener {
                     @Override
                     public void processMatch(Class<? extends SubstanceLookAndFeel> matchingClass) {
                         try {
-                            laf = (LookAndFeel) matchingClass.newInstance();
-                            lafName = laf.getName();
-                            lafCalssName = laf.getClass().getName();
+                            System.out.println("    >> " + matchingClass.getName());
+                            //Class clazz = matchingClass;
+                            //laf = (SubstanceLookAndFeel) matchingClass.newInstance();
+                            //lafName = laf.getName();
+                            lafCalssName = matchingClass.getName();
+                            lafName = lafCalssName.substring(46);
+
                             UIManager.installLookAndFeel(lafName, lafCalssName);
                             //System.out.println(laf.getName() + " >> " + laf.getClass().getName());
                             /*
@@ -397,6 +393,7 @@ public class UIManagerDefaults implements ActionListener, ItemListener {
                             }
                              */
                         } catch (Exception ex) {
+                            //ex.printStackTrace();
                             System.out.println("Failed loading Substance L&F: " + laf);
                             System.out.println(ex);
                         }
@@ -407,19 +404,19 @@ public class UIManagerDefaults implements ActionListener, ItemListener {
 
         UIManager.LookAndFeelInfo[] lafInfo = UIManager.getInstalledLookAndFeels();
 
-        for (UIManager.LookAndFeelInfo info : lafInfo) {
-            lafCalssName = info.getClassName();
-            lafName = info.getName();
-            Action action = new ChangeLookAndFeelAction(this, lafCalssName, lafName);
+        for (UIManager.LookAndFeelInfo lafInfo1 : lafInfo) {
+            String laf = lafInfo1.getClassName();
+            String name = lafInfo1.getName();
+            Action action = new ChangeLookAndFeelAction(this, laf, name);
             JRadioButtonMenuItem mi = new JRadioButtonMenuItem(action);
-            lafMenu.add(mi);
-            lafButtonGroup.add(mi);
-            if (lafName.equals(lafId)) {
+            menu.add(mi);
+            bg.add(mi);
+            if (name.equals(lafId)) {
                 mi.setSelected(true);
             }
         }
 
-        return lafMenu;
+        return menu;
     }
 
     /*
@@ -598,7 +595,6 @@ public class UIManagerDefaults implements ActionListener, ItemListener {
                 standInComponent = (JComponent) clazz.newInstance();
             } catch (InstantiationException e) {
                 standInComponent = new AbstractButton() {
-                    private static final long serialVersionUID = 1L;
                 };
                 ((AbstractButton) standInComponent).setModel(new DefaultButtonModel());
             }
@@ -624,14 +620,12 @@ public class UIManagerDefaults implements ActionListener, ItemListener {
     /*
 	 *  Render the value based on its class.
      */
-    private class SampleRenderer extends JLabel implements TableCellRenderer {
-
-        private static final long serialVersionUID = 1L;
+    class SampleRenderer extends JLabel implements TableCellRenderer {
 
         public SampleRenderer() {
             super();
-            setHorizontalAlignment(SwingConstants.CENTER);
-            setOpaque(true);
+            super.setHorizontalAlignment(SwingConstants.CENTER);
+            super.setOpaque(true);
         }
 
         @Override
@@ -676,9 +670,7 @@ public class UIManagerDefaults implements ActionListener, ItemListener {
 	 *  Change the LAF and recreate the UIManagerDefaults so that the properties
 	 *  of the new LAF are correctly displayed.
      */
-    private class ChangeLookAndFeelAction extends AbstractAction {
-
-        private static final long serialVersionUID = 1L;
+    class ChangeLookAndFeelAction extends AbstractAction {
 
         private final UIManagerDefaults defaults;
         private final String laf;
@@ -693,8 +685,8 @@ public class UIManagerDefaults implements ActionListener, ItemListener {
         @Override
         public void actionPerformed(ActionEvent e) {
             try {
-                UIManager.setLookAndFeel(laf);
                 defaults.resetComponents();
+                UIManager.setLookAndFeel(laf);
 
                 JMenuItem mi = (JMenuItem) e.getSource();
                 JPopupMenu popup = (JPopupMenu) mi.getParent();
@@ -706,14 +698,15 @@ public class UIManagerDefaults implements ActionListener, ItemListener {
                 frame.dispose();
 
                 if (UIManager.getLookAndFeel().getSupportsWindowDecorations()) {
-                    //frame.setUndecorated(true);
-                    //frame.getRootPane().setWindowDecorationStyle(JRootPane.FRAME);
+                    frame.setUndecorated(true);
+                    frame.getRootPane().setWindowDecorationStyle(JRootPane.FRAME);
                 } else {
-                    //frame.setUndecorated(false);
+                    frame.setUndecorated(false);
                 }
 
                 frame.setVisible(true);
             } catch (Exception ex) {
+                //ex.printStackTrace();
                 System.out.println("Failed loading L&F: " + laf);
                 System.out.println(ex);
             }
@@ -723,14 +716,12 @@ public class UIManagerDefaults implements ActionListener, ItemListener {
     /*
 	 *	Close the frame
      */
-    private class ExitAction extends AbstractAction {
-
-        private static final long serialVersionUID = 1L;
+    class ExitAction extends AbstractAction {
 
         public ExitAction() {
-            putValue(Action.NAME, "Exit");
-            putValue(Action.SHORT_DESCRIPTION, getValue(Action.NAME));
-            putValue(Action.MNEMONIC_KEY, KeyEvent.VK_X);
+            super.putValue(Action.NAME, "Exit");
+            super.putValue(Action.SHORT_DESCRIPTION, super.getValue(Action.NAME));
+            super.putValue(Action.MNEMONIC_KEY, KeyEvent.VK_X);
         }
 
         @Override
@@ -745,7 +736,7 @@ public class UIManagerDefaults implements ActionListener, ItemListener {
     private static void createAndShowGUI() {
         UIManagerDefaults application = new UIManagerDefaults();
 
-        //JFrame.setDefaultLookAndFeelDecorated(true);
+        JFrame.setDefaultLookAndFeelDecorated(true);
         JFrame frame = new JFrame("UIManager Defaults");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setJMenuBar(application.getMenuBar());
@@ -759,6 +750,8 @@ public class UIManagerDefaults implements ActionListener, ItemListener {
 	 *  UIManagerDefaults Main. Called only if we're an application.
      */
     public static void main(String[] args) {
+        System.setProperty("sun.awt.noerasebackground", "true");
+
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
