@@ -1,5 +1,11 @@
 package com.mtbadi39.substance;
 
+/*
+ *	This programs uses the information found in the UIManager
+ *  to create a table of key/value pairs for each Swing component.
+ *  from : http://www.camick.com/java/source/UIManagerDefaults.java
+ *
+ */
 import io.github.lukehutch.fastclasspathscanner.FastClasspathScanner;
 import io.github.lukehutch.fastclasspathscanner.matchprocessor.SubclassMatchProcessor;
 import java.awt.BorderLayout;
@@ -673,10 +679,9 @@ public class UIManagerDefaults implements ActionListener, ItemListener {
         @Override
         public void actionPerformed(ActionEvent e) {
             try {
-                
+
                 defaults.resetComponents();
                 UIManager.setLookAndFeel(laf);
-                
 
                 JMenuItem mi = (JMenuItem) e.getSource();
                 JPopupMenu popup = (JPopupMenu) mi.getParent();
