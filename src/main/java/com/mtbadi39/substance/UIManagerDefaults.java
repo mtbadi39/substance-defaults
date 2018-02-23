@@ -180,14 +180,6 @@ public class UIManagerDefaults implements ActionListener, ItemListener {
         comboBox.addItemListener(this);
         comboBox.requestFocusInWindow();
 
-        if (selectedItem != null && comboBoxItems.contains(selectedItem)) {
-            System.out.println(" >> selectedItem : " + selectedItem);
-            System.out.println(" >> comboBoxItems : ");
-            for (String s : comboBoxItems) {
-                System.out.println("     - " + s);
-            }
-            comboBox.setSelectedItem(selectedItem);
-        }
     }
 
     /*
@@ -355,25 +347,21 @@ public class UIManagerDefaults implements ActionListener, ItemListener {
     /**
      * Create menu items for the Look & Feel menu
      */
-    private JMenu lafMenu;
-    private ButtonGroup lafButtonGroup;
-    private String lafId;
-
     private JMenu createLAFMenu() {
         String lafCalssName;
         String lafName;
-        lafButtonGroup = new ButtonGroup();
+        ButtonGroup lafButtonGroup = new ButtonGroup();
 
-        lafMenu = new JMenu("Look & Feel");
+        JMenu lafMenu = new JMenu("Look & Feel");
         lafMenu.setMnemonic('L');
 
-        lafId = UIManager.getLookAndFeel().getID();
+        String selectedLaf = UIManager.getLookAndFeel().getID();
 
         /**
-         * Install Substance LookAndFeel  *
+         * Install Substance LookAndFeel(s)
          */
         new FastClasspathScanner("org.pushingpixels.substance.api.skin")
-                .verbose()
+                //.verbose()
                 .matchSubclassesOf(SubstanceLookAndFeel.class, new SubclassMatchProcessor<SubstanceLookAndFeel>() {
                     String lafCalssName;
                     String lafName;
@@ -386,16 +374,6 @@ public class UIManagerDefaults implements ActionListener, ItemListener {
                             lafName = laf.getName();
                             lafCalssName = laf.getClass().getName();
                             UIManager.installLookAndFeel(lafName, lafCalssName);
-                            //System.out.println(laf.getName() + " >> " + laf.getClass().getName());
-                            /*
-                            Action action = new ChangeLookAndFeelAction(UIManagerDefaults.this, lafCalssName, lafName);
-                            JRadioButtonMenuItem mi = new JRadioButtonMenuItem(action);
-                            lafMenu.add(mi);
-                            lafButtonGroup.add(mi);
-                            if (lafName.equals(lafId)) {
-                                mi.setSelected(true);
-                            }
-                             */
                         } catch (Exception ex) {
                             System.out.println("Failed loading Substance L&F: " + laf);
                             System.out.println(ex);
@@ -414,7 +392,7 @@ public class UIManagerDefaults implements ActionListener, ItemListener {
             JRadioButtonMenuItem mi = new JRadioButtonMenuItem(action);
             lafMenu.add(mi);
             lafButtonGroup.add(mi);
-            if (lafName.equals(lafId)) {
+            if (lafName.equals(selectedLaf)) {
                 mi.setSelected(true);
             }
         }
@@ -538,12 +516,14 @@ public class UIManagerDefaults implements ActionListener, ItemListener {
 
         @Override
         public int getIconHeight() {
-            return wrappee.getIconHeight();
+            //return wrappee.getIconHeight();
+            return 16;
         }
 
         @Override
         public int getIconWidth() {
-            return wrappee.getIconWidth();
+            //return wrappee.getIconWidth();
+            return 16;
         }
 
         @Override
@@ -693,8 +673,10 @@ public class UIManagerDefaults implements ActionListener, ItemListener {
         @Override
         public void actionPerformed(ActionEvent e) {
             try {
-                UIManager.setLookAndFeel(laf);
+                
                 defaults.resetComponents();
+                UIManager.setLookAndFeel(laf);
+                
 
                 JMenuItem mi = (JMenuItem) e.getSource();
                 JPopupMenu popup = (JPopupMenu) mi.getParent();
@@ -706,10 +688,14 @@ public class UIManagerDefaults implements ActionListener, ItemListener {
                 frame.dispose();
 
                 if (UIManager.getLookAndFeel().getSupportsWindowDecorations()) {
-                    //frame.setUndecorated(true);
-                    //frame.getRootPane().setWindowDecorationStyle(JRootPane.FRAME);
+                    frame.setUndecorated(true);
+                    frame.getRootPane().setWindowDecorationStyle(JRootPane.FRAME);
                 } else {
-                    //frame.setUndecorated(false);
+                    frame.setUndecorated(false);
+                }
+
+                if (selectedItem != null) {
+                    comboBox.setSelectedItem(selectedItem);
                 }
 
                 frame.setVisible(true);
