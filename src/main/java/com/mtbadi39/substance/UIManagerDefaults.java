@@ -523,13 +523,13 @@ public class UIManagerDefaults implements ActionListener, ItemListener {
         @Override
         public int getIconHeight() {
             //return wrappee.getIconHeight();
-            return 16;
+            return 8;
         }
 
         @Override
         public int getIconWidth() {
             //return wrappee.getIconWidth();
-            return 16;
+            return 8;
         }
 
         @Override
